@@ -12,20 +12,55 @@ let editElement;
 let editFlag = false;
 let editID = "";
 // ****** EVENT LISTENERS **********
-form.addEventListener('submit', addItem)
+// submit form
+form.addEventListener('submit', addItem);
+// clear items
+clearBtn.addEventListener("click", clearItems); 
 // ****** FUNCTIONS **********
 function addItem(e) {
     e.preventDefault();
     const value = doit.value;
+
     const id = new Date().getTime().toString();
-    
     if (value && !editFlag) {
-        console.log("add item to the list");
+        const element = document.createElement("article");
+        // add class
+        element.classList.add("grocery-item");
+        // add id
+        const attr = document.createAttribute("data-id");
+        attr.value = id;
+        element.setAttributeNode(attr);
+        element.innerHTML = `<p class="title">${value}</p>
+        <div class="btn-container">
+          <button type="button" class="edit-btn">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button type="button" class="delete-btn">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`;
+        const deleteBtn = element.querySelector(".delete-btn");
+        const editBtn = element.querySelector(".edit-btn");
+        deleteBtn.addEventListener("click", deleteItem);
+        editBtn.addEventListener("click", editItem);
+        // append child
+        list.appendChild(element);
+        // diplay alert
+        displayAlert("item added to the list", "success")
+        // show container
+        container.classList.add("show-container");
+        // add to local storage
+        addToLocalStorage(id, value);
+        // set back to deafult
+        setBackToDefault();
     } else if (value && editFlag) {
-        console.log("editing");
+        editElement.innerHTML = value;
+        displayAlert("value changed", "success");
+        // edit local storage
+        editLocalStorage(editID, value);
+        setBackToDefault();
     } else {
-        alert.textContent = "empty value";
-        alert.classList.add("alert-danger");
+        displayAlert("please enter value", "danger");
     }
 }
 // display alert
@@ -38,6 +73,59 @@ function displayAlert(text, action) {
         alert.classList.remove(`alert-${action}`);
     }, 1000);
 }
-// ****** LOCAL STORAGE **********
 
+// clear items
+function clearItems() {
+    const items = document.querySelectorAll(".grocery-item");
+    if (items.length > 0) {
+        items.forEach(function (item) {
+            list.removeChild(item);
+        })
+    }
+    container.classList.remove("show-container");
+    displayAlert("list emptied", "danger");
+    setBackToDefault();
+    // localStorage.removeItem("list");
+}
+
+// delete function 
+function deleteItem(e) {
+    const element = e.currentTarget.parentElement.parentElement;
+    const id = element.dataset.id;
+    list.removeChild(element);
+    if (list.children.length === 0) {
+        container.classList.remove("show-container");
+    }
+    displayAlert("item removed", "danger");
+    setBackToDefault();
+    // remove from local storage
+    // removeFromLocalStorage(id);
+}
+// edit function 
+function editItem(e) {
+    const element = e.currentTarget.parentElement.parentElement;
+    // set edit item
+    editElement = e.currentTarget.parentElement.previousElementSibling;
+    // set form value
+    doit.value = editElement.innerHTML;
+    editFlag = true;
+    editID = element.dataset.id;
+    submitBtn.textContent = "edit";
+}
+// set back to deafult
+function setBackToDefault() {
+    doit.value = "";
+    editFlag = false;
+    editID = "";
+    submitBtn.textContent = "submit";
+    console.log("set back to default");
+}
+
+// ****** LOCAL STORAGE **********
+function addToLocalStorage(id, value) {
+   // console.log("added to local storage");
+}
+
+function removeFromLocalStorage(id) {}
+function editLocalStorage(id, value) {}
 // ****** SETUP ITEMS **********
